@@ -1,15 +1,25 @@
 import readline
-import sqlite3
 import os
-import sys
+
+from connection import connection_dialogue
+from sqlite_helpers import modifies_db
+from string_manip import to_string
 
 
 class REPL:
     histfile = os.path.join(os.path.expanduser("~"), ".sqlsn3k_history")
 
     def __init__(self, db_name=None, database_connection=None):
+        """
+        Initializes the REPL object. Also initializes the readline library's
+        'history' functionality.
+        db_name and database_connection are optional arguments in case a
+        database connection is establish when launching the program from the
+        command line.
+        """
         self.connection = database_connection
         self.db_name = db_name
+        self.db_modified = False
         try:
             readline.read_history_file(self.histfile)
             readline.set_history_length(2048)
@@ -17,7 +27,10 @@ class REPL:
             pass
 
     def close(self):
-        if self.connection is not None:
+        """
+        Closes the current database connection if any and then closes the REPL
+        """
+        if self.connection is not None and self.db_modified:
             commit = input('Commit changes to the database? (y/n): ')
             if commit.lower() == 'y':
                 print("Committing and closing...")
@@ -26,12 +39,20 @@ class REPL:
         exit(0)
 
     def read(self):
+        """
+        The 'Read' portion of the REPL. Prompts the user for input and returns
+        that input.
+        """
         if self.db_name is not None:
             return input(f'({self.db_name})>>> ')
         else:
             return input(">>> ")
 
     def eval(self, cmd):
+        """
+        The 'eval' portion of the REPL. Calls other functions based on user
+        input.
+        """
         cmd = cmd.split()
         if self.connection is None:
             if cmd:
@@ -50,24 +71,31 @@ class REPL:
                 self.close()
                 return None
             else:
+                if modifies_db(cmd):
+                    self.db_modified = True
                 # Yes, this is bad practice; TODO change this
                 return self.connection.cursor().execute(' '.join(cmd))
 
     def print(self, obj):
-        if type(obj) is sqlite3.Cursor:
+        """
+        The print portion of the REPL. Prints the output of the Eval'd input,
+        or an error if the input was invalid.
+        """
+        if type(obj) is not str:
             try:
                 # TODO Better printing function
-                rows = obj.fetchall()
-                if rows:
-                    print(rows[0].keys())
-                    for row in rows:
-                        print(to_string(row))
+                print(to_string(obj))
             except Exception as ex:
                 print(ex)
         else:
-            print(str(obj))
+            print(obj)
 
     def loop(self):
+        """
+        Prompts the user for input until it recieves a certain command, a
+        catastrophic error occurs, a KeyboardInterrupt, or it reads an EOF
+        character.
+        """
         reading = True
         while reading:
             try:
@@ -84,67 +112,3 @@ class REPL:
             except Exception as err:
                 print(err)
                 self.close()
-
-
-def to_string(not_string, list_delimiter=', '):
-    T = type(not_string)
-    if not_string is None:
-        return ''
-    elif T is list or T is tuple or T is set:
-        printable_list = list()
-        for item in T:
-            if item is None:
-                printable_list.append('')
-            else:
-                printable_list.append(str(item))
-        return list_delimiter.join(printable_list)
-    elif T is sqlite3.Row:
-        return ', '.join(map(str, not_string))
-    else:
-        return str(not_string)
-
-
-def parse_args(args):
-    if args[0] == "-d":
-        return ' '.join(args[1:]).strip()
-    else:
-        return None
-
-
-def connect(path):
-    try:
-        connection = sqlite3.connect(path)
-        connection.row_factory = sqlite3.Row
-        return connection
-    except Exception as e:
-        print(f'Error opening database "{path}":\n{e}')
-        return None
-
-
-def connection_dialogue(path):
-    if type(path) is list:
-        path = ''.join(path).strip()
-    elif type(path) is not str:
-        path = str(path)
-    if os.path.isfile(path):
-        return connect(path)
-    else:
-        yn = input(f'Database "{path}" does not exist,'
-                   + " would you like to create it? (y/n):")
-        if yn.lower() == 'y':
-            return connect(path)
-        else:
-            return None
-
-
-if __name__ == "__main__":
-    db_name = None
-    con = None
-    if len(sys.argv) > 1:
-        args = parse_args(sys.argv)
-        if args is not None:
-            con = connect(args)
-        else:
-            con = None
-    repl = REPL(db_name, con)
-    repl.loop()
