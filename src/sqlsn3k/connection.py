@@ -66,8 +66,9 @@ class SQLConnection:
         """
         Attemps to close the SQL connection
         """
-        if self.modified and not failed:
-            if commit.lower() == 'y':
-                print("Commiting and closing the database...")
-                self.connection.commit()
-        self.connection.close()
+        if self.connection is not None:
+            if self.modified and not failed:
+                if commit.lower() == 'y':
+                    print("Commiting and closing the database...")
+                    self.connection.commit()
+            self.connection.close()
