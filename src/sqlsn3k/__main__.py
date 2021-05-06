@@ -1,7 +1,6 @@
 import sys
 
 from repl import REPL
-from connection import connect
 
 
 def parse_args(args):
@@ -22,8 +21,6 @@ def main():
     if len(sys.argv) > 1:
         args = parse_args(sys.argv)
         if args is not None:
-            con = connect(args)
-        else:
             con = None
     repl = REPL(db_name, con)
     repl.loop()

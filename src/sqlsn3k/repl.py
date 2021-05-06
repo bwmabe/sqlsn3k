@@ -1,8 +1,7 @@
 import readline
 import os
 
-from connection import connection_dialogue
-from sqlite_helpers import modifies_db
+from connection import SQLConnection
 from string_manip import to_string
 
 
@@ -19,7 +18,6 @@ class REPL:
         """
         self.connection = database_connection
         self.db_name = db_name
-        self.db_modified = False
         try:
             readline.read_history_file(self.histfile)
             readline.set_history_length(2048)
@@ -30,12 +28,9 @@ class REPL:
         """
         Closes the current database connection if any and then closes the REPL
         """
-        if self.connection is not None and self.db_modified:
+        if self.connection is not None:
             commit = input('Commit changes to the database? (y/n): ')
-            if commit.lower() == 'y':
-                print("Committing and closing...")
-                self.connection.commit()
-            self.connection.close()
+            self.connection.close(commit)
         exit(0)
 
     def read(self):
@@ -57,8 +52,10 @@ class REPL:
         if self.connection is None:
             if cmd:
                 if cmd[0] == 'open':
-                    self.db_name = ' '.join(cmd[1:]).strip()
-                    self.connection = connection_dialogue(cmd[1:])
+                    connection_temp = SQLConnection(cmd[1:])
+                    if connection_temp is not None:
+                        self.db_name = ' '.join(cmd[1:]).strip()
+                        self.connection = connection_temp
                     return True
                 elif cmd[0] == 'quit' or cmd[0] == 'exit':
                     return None
@@ -71,10 +68,7 @@ class REPL:
                 self.close()
                 return None
             else:
-                if modifies_db(cmd):
-                    self.db_modified = True
-                # Yes, this is bad practice; TODO change this
-                return self.connection.cursor().execute(' '.join(cmd))
+                return self.connection.execute(cmd)
 
     def print(self, obj):
         """
@@ -86,7 +80,7 @@ class REPL:
                 # TODO Better printing function
                 print(to_string(obj))
             except Exception as ex:
-                print(ex)
+                print(f'repl.print: {ex}')
         else:
             print(obj)
 
@@ -110,5 +104,5 @@ class REPL:
             except KeyboardInterrupt:
                 self.close()
             except Exception as err:
-                print(err)
+                print(f'repl.loop: {err}')
                 self.close()
