@@ -29,7 +29,7 @@ class REPL:
         Closes the current database connection if any and then closes the REPL
         """
         if self.connection is not None:
-            if not self.connection.modified:
+            if self.connection.modified:
                 commit = input('Commit changes to the database? (y/n): ')
             self.connection.close(commit)
         exit(0)
