@@ -96,7 +96,6 @@ class REPL:
             try:
                 cmd = self.read()
                 result = self.eval(cmd)
-                print(result)
                 if result is not None:
                     if type(result) is not bool:
                         self.print(result)
