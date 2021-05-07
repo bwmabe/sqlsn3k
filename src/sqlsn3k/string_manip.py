@@ -39,7 +39,7 @@ def to_string(not_string, list_delimiter=', '):
         return ''
     elif T is list or T is tuple or T is set:
         printable_list = list()
-        for item in T:
+        for item in not_string:
             if item is None:
                 printable_list.append('')
             else:
