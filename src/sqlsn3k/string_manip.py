@@ -1,7 +1,16 @@
 import sqlite3
 
 
-from sqlite_helpers import process_row
+def process_row(row, first=False):
+    """
+    Converts a sqlite3.Row object to a string. A boolean is passed to indicate
+    if the supplied row is the first or only row in a list() of rows.
+    """
+    heading = ''
+    if first:
+        heading = ' '.join(row.keys()) + '\n'
+    content = ' '.join(map(str, row))
+    return heading + content
 
 
 def pretty_print(rc):
