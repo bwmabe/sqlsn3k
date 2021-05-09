@@ -1,6 +1,33 @@
 import sqlite3
 
 
+def longest_col_in_row(row):
+    longest = (None, 0)
+    for elem in row:
+        curr = (elem, len(str(elem)))
+        if curr[1] > longest[1]:
+            longest = curr
+    return curr
+
+
+def longest_in_each_col(cursor):
+    """
+    returns a List containing the lenght of the longest item in each column
+    of a cursor. Column index corresponds to the index of the returned List.
+    """
+    first_row = cursor.fetchone()
+    ncols = len(first_row)
+    rows = [first_row]
+    longests = [0 for i in range(0, ncols)]
+    for row in cursor.fetchall():
+        rows.append(row)
+    for row in rows:
+        for i in range(0, ncols):
+            if len(str(row[i])) > longests[i]:
+                longests[i] = len(str(row[i]))
+    return longests
+
+
 def process_row(row, first=False):
     """
     Converts a sqlite3.Row object to a string. A boolean is passed to indicate
@@ -49,3 +76,13 @@ def to_string(not_string, list_delimiter=', '):
         return pretty_print(not_string)
     else:
         return str(not_string)
+
+
+if __name__ == '__main__':
+    con = sqlite3.connect('test.db')
+    con.row_factory = sqlite3.Row
+    cur = con.execute("SELECT * FROM info")
+    head = con.execute("SELECT * FROM info").fetchone().keys()
+    longests = longest_in_each_col(cur)
+    for i in range(0, 26):
+        print(f'{head[i]}, {longests[i]}')
