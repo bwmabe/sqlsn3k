@@ -58,7 +58,6 @@ class SQLConnection:
             if modifies_db(query):
                 self.modified = True
             try:
-                print(to_string(result))
                 return to_string(result)
             except Exception as e:
                 return f'connection:exectue:execution: {e}'
