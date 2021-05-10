@@ -73,14 +73,17 @@ class Table:
         return_string += suffix
         return return_string
 
-    def get_interval(self, row):
+    def get_interval(self, row, max_width=None):
         """
-        Truncates a row (list of str) to a certain integer amount of
-        characters. Includes a '...' if the entire list could not fit within
-        the given width.
+        Gets (nearly) the max amount of str elements of a list that can be
+        displayed on a single line given a certain line width (inherited from
+        the class parameters by default).
+        Reads from both the start *and* end of the list.
         """
         # TODO: account for the entire lenght of the row being able to fit
         #       within the gvien width.
+        if max_width is None:
+            max_width = self.max_width
         intervals = list()
         elems = len(row)
         for i in range(0, elems):
@@ -99,7 +102,7 @@ class Table:
         current_fit_str = None
         for interval in intervals:
             to_print = self.fit_row(row, interval)
-            if len(to_print) <= self.max_width:
+            if len(to_print) <= max_width:
                 if len(to_print) > len(str(current_fit_str)):
                     current_fit_str = to_print
                     last_best_fit = current_fit
