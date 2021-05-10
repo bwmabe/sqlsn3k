@@ -4,4 +4,5 @@ def modifies_db(cmd):
     checking if the DB was modified.
     """
     # TODO: Make this check more robust
+    cmd = cmd.split()
     return cmd[0].lower() != "select"
