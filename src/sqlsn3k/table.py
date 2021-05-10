@@ -4,20 +4,20 @@ import sqlite3
 
 class Table:
     def __init__(self, cursor):
-        self.raw = cursor.fetchall()
-        self.header = self.raw[0].keys()
+        raw = cursor.fetchall()
+        self.header = raw[0].keys()
         self.ncols = len(self.header)
-        self.rows = list(map(tuple, self.raw))
-        self.table = list()
-        self.table.append(tuple(self.header))
-        self.table += self.rows
+        rows = list(map(tuple, raw))
+        temp_table = list()
+        temp_table.append(tuple(self.header))
+        temp_table += rows
         self.max_width = shutil.get_terminal_size().columns
-        self.longests = self.longest_in_each_col()
-        self.table = self.set_widths()
+        self.longests = self.longest_in_each_col(temp_table)
+        self.table = self.snap_to_largest(temp_table)
         self.header = self.table[0]
         self.interval = self.get_interval(self.header)
 
-    def longest_in_each_col(self):
+    def longest_in_each_col(self, table):
         """
         returns a List containing the lenght of the longest item in each column
         of a cursor. Column index corresponds to the index of the returned List
@@ -26,22 +26,26 @@ class Table:
         for i in range(0, self.ncols):
             if len(str(self.header[i])) > longests[i]:
                 longests[i] = len(str(self.header[i]))
-        for row in self.table:
+        for row in table:
             for i in range(0, self.ncols):
                 if len(str(row[i])) > longests[i]:
                     longests[i] = len(str(row[i]))
         return longests
 
-    def set_widths(self):
+    def snap_to_largest(self, to_snap):
+        """
+        Snaps the width of each column of the table to the width of the
+        largest element in the respective column.
+        """
         new_table = list()
-        for row in self.table:
+        for row in to_snap:
             new_row = list()
             for i in range(0, len(self.longests)):
                 new_row.append(f'{str(row[i]):^{self.longests[i]}}')
             new_table.append(new_row)
         return new_table
 
-    def row_to_string(self, row, interval=None):
+    def fit_row(self, row, interval=None):
         """
         Prints a subset of columns in a row to fit within a certain width.
         This function might not be used in its current form. Should be changed
@@ -94,7 +98,7 @@ class Table:
         last_best_fit = list()
         current_fit_str = None
         for interval in intervals:
-            to_print = self.row_to_string(row, interval)
+            to_print = self.fit_row(row, interval)
             if len(to_print) <= self.max_width:
                 if len(to_print) > len(str(current_fit_str)):
                     current_fit_str = to_print
@@ -106,18 +110,26 @@ class Table:
             return current_fit
 
     def header_separator(self):
+        """
+        Returns a string to separate the header of a table from the body of
+        the table.
+        """
         separator = list()
         for i in self.longests:
             separator.append('-' * i)
-        separator = self.row_to_string(separator)
+        separator = self.fit_row(separator)
         return separator
 
     def printable(self):
+        """
+        Returns a list of strings that constitute a printable, human-readable,
+        version of the table
+        """
         lines = list()
-        lines.append(self.row_to_string(self.header))
+        lines.append(self.fit_row(self.header))
         lines.append(self.header_separator())
         for row in self.table[1:]:
-            lines.append(self.row_to_string(row, interval=self.interval))
+            lines.append(self.fit_row(row, interval=self.interval))
         return lines
 
 

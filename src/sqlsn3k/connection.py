@@ -3,6 +3,7 @@ import sqlite3
 
 from sqlite_helpers import modifies_db
 from string_manip import to_string
+from table import Table
 
 
 class SQLConnection:
@@ -53,8 +54,7 @@ class SQLConnection:
         query = to_string(query, list_delimiter=' ')
         cursor = self.connection.cursor()
         try:
-            result = cursor.execute(query)
-            print(result)
+            result = Table(cursor.execute(query))
             if modifies_db(query):
                 self.modified = True
             try:
