@@ -1,4 +1,9 @@
+import shutil
 import sqlite3
+
+
+def term_dims():
+    return shutil.get_terminal_size()
 
 
 def longest_col_in_row(row):
@@ -10,22 +15,32 @@ def longest_col_in_row(row):
     return curr
 
 
-def longest_in_each_col(cursor):
+def longest_in_each_col(table):
     """
     returns a List containing the lenght of the longest item in each column
     of a cursor. Column index corresponds to the index of the returned List.
     """
-    first_row = cursor.fetchone()
-    ncols = len(first_row)
-    rows = [first_row]
+    header = table[0].keys()
+    ncols = len(header)
     longests = [0 for i in range(0, ncols)]
-    for row in cursor.fetchall():
-        rows.append(row)
-    for row in rows:
+    for i in range(0, ncols):
+        if len(str(header[i])) > longests[i]:
+            longests[i] = len(str(header[i]))
+    for row in table:
         for i in range(0, ncols):
             if len(str(row[i])) > longests[i]:
                 longests[i] = len(str(row[i]))
     return longests
+
+
+def set_widths(table):
+    max_width = term_dims().columns
+    longests = longest_in_each_col(table)
+    col_titles = table[0].keys()
+    headings = list()
+    for i in range(0, len(longests)):
+        headings.append(f'{col_titles[i]:^{longests[i]}}')
+    return headings
 
 
 def process_row(row, first=False):
@@ -49,10 +64,11 @@ def pretty_print(rc):
     if T is sqlite3.Row:
         return process_row(rc, first=True)
     elif T is sqlite3.Cursor:
-        rows = rc.fetchall()
+        table = rc.fetchall()
+        create_header(table) 
         content = list()
-        content.append(process_row(rows[0], first=True))
-        content += list(map(process_row, rows[1:]))
+        content.append(process_row(table[0], first=True))
+        content += list(map(process_row, table[1:]))
         return '\n'.join(content)
 
 
@@ -83,6 +99,5 @@ if __name__ == '__main__':
     con.row_factory = sqlite3.Row
     cur = con.execute("SELECT * FROM info")
     head = con.execute("SELECT * FROM info").fetchone().keys()
-    longests = longest_in_each_col(cur)
-    for i in range(0, 26):
-        print(f'{head[i]}, {longests[i]}')
+    for i in set_widths(cur.fetchall()):
+        print(f'|{i}|')
