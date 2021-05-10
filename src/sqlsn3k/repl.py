@@ -31,7 +31,9 @@ class REPL:
         if self.connection is not None:
             if self.connection.modified:
                 commit = input('Commit changes to the database? (y/n): ')
-            self.connection.close(commit)
+                self.connection.close(commit)
+            else:
+                self.connection.close()
         exit(0)
 
     def read(self):
