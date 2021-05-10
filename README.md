@@ -18,7 +18,6 @@ It only depends on packages in the standard library.
 
 ## TODO
 * Add height truncation when displaying the result of a query
-* Fix `index out of range` when a query returns no results
 * Add info about number of rows affected (and maybe tables?) to all non-mutating queries
 * Finish implementing history support
   - Figure out how to get `y/n` prompts to not record

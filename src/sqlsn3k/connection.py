@@ -63,6 +63,8 @@ class SQLConnection:
                 return f'connection:exectue:execution: {e}'
         except ValueError as ve:
             return f'connection:exectue: {ve}\nquery was: {type(query)}'
+        except IndexError:
+            return 'connection:execute: no results'
         except Exception as e:
             return f'connection:execute: {e}'
 
