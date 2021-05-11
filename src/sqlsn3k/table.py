@@ -58,6 +58,10 @@ class Table:
         suffix = ' |'
         delimiter = ' | '
         continuation = ' ... '
+        formatting_len = len(prefix + suffix + (delimiter * self.ncols))
+        content_len = len(''.join(row))
+        if (formatting_len + content_len) <= self.max_width:
+            continuation = delimiter
         return_string = prefix
         new_list = list()
         midpoint = int(len(interval) / 2)
@@ -128,11 +132,20 @@ class Table:
         Returns a list of strings that constitute a printable, human-readable,
         version of the table
         """
+        cols_truncated = None
         lines = list()
-        lines.append(self.fit_row(self.header))
+        header = self.fit_row(self.header)
+        if ' ... ' in header:
+            cols_truncated = self.ncols - len(self.interval)
+            cols_truncated = f'[{cols_truncated} column(s) truncated]'
+        lines.append(header)
         lines.append(self.header_separator())
         for row in self.table[1:]:
             lines.append(self.fit_row(row, interval=self.interval))
+        nlines = len(lines) - 2  # Remove header and separator from count
+        lines.append(f'[Returned {nlines} Row(s) and {self.ncols} Column(s)]')
+        if cols_truncated is not None:
+            lines.append(cols_truncated)
         return lines
 
 
