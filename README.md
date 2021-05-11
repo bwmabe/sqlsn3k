@@ -15,15 +15,3 @@ SQLSn3k is an alternative SQLite3 REPL/shell written in Python. It was made beca
 It only depends on packages in the standard library.
 
 `argparse, command_parser, os, readline, shutil, sqlite3, sys`
-
-## TODO
-* Fix proceeding as DB opened when user refuses to create a database that doesn't exist
-* Add height truncation when displaying the result of a query
-* Add info about number of rows affected (and maybe tables?) to all non-mutating queries
-* Finish implementing history support
-  - Figure out how to get `y/n` prompts to not record
-
-### Wishlist
-* Tab completion
-* Syntax highlighting
-* Support for "real" SQL-like RDBMSes
