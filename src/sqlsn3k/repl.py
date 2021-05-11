@@ -80,7 +80,7 @@ class REPL:
         """
         if type(obj) is not str:
             try:
-                # TODO Better printing function
+                # TODO Better printing function based on type of Object
                 print(to_string(obj))
             except Exception as ex:
                 print(f'repl.print: {ex}')
@@ -107,6 +107,7 @@ class REPL:
             except KeyboardInterrupt:
                 self.close()
             except IndexError:
+                # TODO: Make sure no other indexErrors 'bubble up' to here
                 pass
             except Exception as err:
                 print(f'repl.loop: {err}')
