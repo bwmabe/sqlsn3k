@@ -106,6 +106,8 @@ class REPL:
                 result = None
             except KeyboardInterrupt:
                 self.close()
+            except IndexError:
+                pass
             except Exception as err:
                 print(f'repl.loop: {err}')
                 self.close()
