@@ -56,7 +56,7 @@ class REPL:
             if cmd:
                 if cmd[0] == 'open':
                     connection_temp = SQLConnection(cmd[1:])
-                    if connection_temp is not None:
+                    if connection_temp.connection is not None:
                         self.db_name = ' '.join(cmd[1:]).strip()
                         self.connection = connection_temp
                     return True
