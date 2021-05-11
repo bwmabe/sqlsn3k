@@ -83,9 +83,14 @@ class REPL:
                 # TODO Better printing function based on type of Object
                 print(to_string(obj))
             except Exception as ex:
-                print(f'repl.print: {ex}')
+                print(f'repl.print.non_string:\n\t{ex}')
         else:
-            print(obj)
+            # This branch assumes that obj is a str, wrapping in try-catch
+            # just in case something happens
+            try:
+                print(obj)
+            except Exception as ex:
+                print(f'repl.print.string:\n\t{ex}')
 
     def loop(self):
         """
