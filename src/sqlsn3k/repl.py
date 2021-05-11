@@ -63,7 +63,7 @@ class REPL:
                 elif cmd[0] == 'quit' or cmd[0] == 'exit':
                     return None
                 else:
-                    return self.print(f'"{" ".join(cmd)}" is not a command')
+                    return f'"{" ".join(cmd)}" is not a command'
             else:
                 return True
         else:
@@ -110,6 +110,8 @@ class REPL:
                     reading = False
                 result = None
             except KeyboardInterrupt:
+                self.close()
+            except EOFError:
                 self.close()
             except IndexError:
                 # TODO: Make sure no other indexErrors 'bubble up' to here
