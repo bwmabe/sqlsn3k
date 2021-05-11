@@ -50,6 +50,9 @@ class REPL:
         """
         The 'eval' portion of the REPL. Calls other functions based on user
         input.
+        Returns a string containing either the output of a query or
+        information about a non-fatal error.
+        Returns a Bool if command completed without any output
         """
         cmd = cmd.split()
         if self.connection is None:
