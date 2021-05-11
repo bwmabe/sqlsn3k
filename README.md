@@ -14,4 +14,4 @@ SQLSn3k is an alternative SQLite3 REPL/shell written in Python. It was made beca
 ### Dependencies
 It only depends on packages in the standard library.
 
-`argparse, command_parser, os, readline, shutil, sqlite3, sys`
+`os, readline, shutil, sqlite3, sys`
