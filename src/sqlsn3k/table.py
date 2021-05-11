@@ -12,10 +12,12 @@ class Table:
         temp_table.append(tuple(self.header))
         temp_table += rows
         self.max_width = shutil.get_terminal_size().columns
+        self.max_height = shutil.get_terminal_size().lines
         self.longests = self.longest_in_each_col(temp_table)
         self.table = self.snap_to_largest(temp_table)
         self.header = self.table[0]
-        self.interval = self.get_interval(self.header)
+        self.interval = self.find_best_fit(self.header, self.max_width,
+                                           self.fit_row)
 
     def longest_in_each_col(self, table):
         """
@@ -77,19 +79,13 @@ class Table:
         return_string += suffix
         return return_string
 
-    def get_interval(self, row, max_width=None):
+    def generate_intervals(self, elems):
         """
-        Gets (nearly) the max amount of str elements of a list that can be
-        displayed on a single line given a certain line width (inherited from
-        the class parameters by default).
-        Reads from both the start *and* end of the list.
+        Generates all possible permutations of lists that access elements from
+        boths ends of a list without accessing the middle, and one permutation
+        that accesses ALL elements of a list.
         """
-        # TODO: account for the entire lenght of the row being able to fit
-        #       within the gvien width.
-        if max_width is None:
-            max_width = self.max_width
         intervals = list()
-        elems = len(row)
         for i in range(0, elems):
             interval = list()
             if i <= int(elems / 2):
@@ -101,12 +97,24 @@ class Table:
                     interval.append(-1 * (j + 1))
             if interval:
                 intervals.append(interval)
+        return intervals
+
+    def find_best_fit(self, obj, max_val, fit_function):
+        """
+        Finds (nearly) the maximum amount of some object that can be displayed
+        before truncation. Preserves the first n and last m elements and hides
+        a subset of elements from the 'middle' of the object.
+        """
+        if max_val is None:
+            max_val = self.max_width
+        elems = len(obj)
+        intervals = self.generate_intervals(elems)
         current_fit = list()
         last_best_fit = list()
         current_fit_str = None
         for interval in intervals:
-            to_print = self.fit_row(row, interval)
-            if len(to_print) <= max_width:
+            to_print = fit_function(obj, interval)
+            if len(to_print) <= max_val:
                 if len(to_print) > len(str(current_fit_str)):
                     current_fit_str = to_print
                     last_best_fit = current_fit
@@ -126,6 +134,12 @@ class Table:
             separator.append('-' * i)
         separator = self.fit_row(separator)
         return separator
+
+    def truncate_height(self, output):
+        """
+        Takes a List of Str and returns a truncated list that fits the display.
+        """
+        height = len(output)
 
     def printable(self):
         """
