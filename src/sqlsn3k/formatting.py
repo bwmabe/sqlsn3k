@@ -1,4 +1,14 @@
-def fit_row(row, width, ncols, interval):
+def insert_at_midpoint(item, iterable):
+    """
+    Inserts an item at the index of the midpoint of a list
+    Returns that list with the item inserted
+    """
+    midpoint = int(len(iterable) / 2)
+    iterable.insert(midpoint, item)
+    return iterable
+
+
+def fit_row(row, width, interval, nfields=None):
     """
     Prints a subset of columns in a row to fit within a certain width.
     This function might not be used in its current form. Should be changed
@@ -9,24 +19,35 @@ def fit_row(row, width, ncols, interval):
     suffix = ' |'
     delimiter = ' | '
     continuation = ' ... '
-    formatting_len = len(prefix + suffix + (delimiter * ncols))
+    formatting_len = len(prefix + suffix + (delimiter * nfields))
     content_len = len(''.join(row))
     if (formatting_len + content_len) <= width:
         continuation = delimiter
-    return_string = prefix
     new_list = list()
-    midpoint = int(len(interval) / 2)
-    lower_half = range(0, midpoint)
-    upper_half = range(midpoint, len(interval))
-    for i in lower_half:
-        new_list.append(row[interval[i]])
-    for i in upper_half:
-        new_list.append(row[interval[i]])
-    return_string += delimiter.join(new_list[:midpoint])
-    return_string += continuation
-    return_string += delimiter.join(new_list[midpoint:])
+    for i in interval:
+        new_list.append(row[i])
+    new_list = insert_at_midpoint(continuation, new_list)
+    return_string = prefix
+    return_string += delimiter.join(new_list)
     return_string += suffix
     return return_string
+
+
+def fit_table(table, height, interval, nfields=None):
+    """
+    Takes a list of rows, a desired height, and an interval to see if the list
+    will fit within the specified height.
+    Doesn't truncate if the desired height is less than 15 lines tall
+    Subtracts 5 lines from the given to make sure that additional formatting
+    elements and information lines can fit on the screen
+    """
+    if height <= 15:
+        return None
+    new_table = [table[i] for i in interval]
+    width = len(table[0])
+    continuation = '...'
+    new_table = insert_at_midpoint(f'{continuation:^{width}}', new_table)
+    return new_table
 
 
 def longest_in_col(table, ncols, header=None):
@@ -46,20 +67,20 @@ def longest_in_col(table, ncols, header=None):
     return longests
 
 
-def generate_intervals(elems):
+def generate_intervals(nelements):
     """
     Generates all possible permutations of lists that access elements from
     boths ends of a list without accessing the middle, and one permutation
     that accesses ALL elements of a list.
     """
     intervals = list()
-    for i in range(0, elems):
+    for i in range(0, nelements):
         interval = list()
-        if i <= int(elems / 2):
+        if i <= int(nelements / 2):
             for j in range(0, i):
                 interval.append(j)
-            if i == int(elems / 2) and (elems % 2) == 1:
-                interval.append(int(elems / 2))
+            if i == int(nelements / 2) and (nelements % 2) == 1:
+                interval.append(int(nelements / 2))
             for j in range(i - 1, -1, -1):
                 interval.append(-1 * (j + 1))
         if interval:
@@ -67,26 +88,36 @@ def generate_intervals(elems):
     return intervals
 
 
-def best_fit(obj, max_val, nfields, fit_function):
+def best_fit(obj, max_val, fit_function, nfields=None):
     """
     Finds (nearly) the maximum amount of some object that can be displayed
     before truncation. Preserves the first n and last m elements and hides
     a subset of elements from the 'middle' of the object.
     """
-    elems = len(obj)
-    intervals = generate_intervals(elems)
+    intervals = generate_intervals(len(obj))
     current_fit = list()
-    last_best_fit = list()
-    current_fit_str = None
+    current_fit_obj = None
     for interval in intervals:
-        to_print = fit_function(obj, max_val, nfields, interval)
-        if len(to_print) <= max_val:
-            if len(to_print) > len(str(current_fit_str)):
-                current_fit_str = to_print
-                last_best_fit = current_fit
-                current_fit = interval
-    if current_fit is None and last_best_fit is None:
-        return intervals[0]
+        fitted = fit_function(obj, max_val, interval, nfields=nfields)
+        T = type(fitted)
+        L = None
+        if fitted is not None:
+            L = len(fitted)
+        else:
+            L = max_val + 1
+        if L <= max_val:
+            if T is str:
+                if L > len(str(current_fit_obj)):
+                    current_fit_obj = fitted
+                    current_fit = interval
+            elif T is list:
+                if current_fit_obj is None:
+                    current_fit_obj = list()
+                if L > len(list(current_fit_obj)):
+                    current_fit_obj = fitted
+                    current_fit = interval
+    if current_fit_obj is None:
+        return intervals[-1]
     else:
         return current_fit
 

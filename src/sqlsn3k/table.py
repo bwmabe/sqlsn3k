@@ -1,7 +1,7 @@
 import shutil
 import sqlite3
 
-from formatting import fit_row, longest_in_col, best_fit, snap_to_widest
+from formatting import fit_row, fit_table, longest_in_col, best_fit, snap_to_widest
 
 
 class Table:
@@ -18,7 +18,7 @@ class Table:
         self.longests = longest_in_col(temp_table, self.ncols, self.header)
         self.table = snap_to_widest(temp_table, self.longests)
         self.header = self.table[0]
-        self.interval = best_fit(self.header, self.width, self.ncols, fit_row)
+        self.interval = best_fit(self.header, self.width, fit_row, self.ncols)
 
     def header_separator(self):
         """
@@ -28,14 +28,14 @@ class Table:
         separator = list()
         for i in self.longests:
             separator.append('-' * i)
-        separator = fit_row(separator, self.width, self.ncols, self.interval)
+        separator = fit_row(separator, self.width, self.interval, self.ncols)
         return separator
 
-    def truncate_height(self, output):
+    def truncate_height(self, lines):
         """
         Takes a List of Str and returns a truncated list that fits the display.
         """
-        height = len(output)
+        return fit_table(lines, self.height, best_fit(lines, self.height - 5, fit_table))
 
     def printable(self):
         """
@@ -44,16 +44,17 @@ class Table:
         """
         cols_truncated = None
         lines = list()
-        header = fit_row(self.header, self.width, self.ncols, self.interval)
+        header = fit_row(self.header, self.width, self.interval, self.ncols)
         if ' ... ' in header:
             cols_truncated = self.ncols - len(self.interval)
             cols_truncated = f'[{cols_truncated} column(s) truncated]'
         lines.append(header)
         lines.append(self.header_separator())
         for row in self.table[1:]:
-            lines.append(fit_row(row, self.width, self.ncols, self.interval))
+            lines.append(fit_row(row, self.width, self.interval, self.ncols))
         nlines = len(lines) - 2  # Remove header and separator from count
         lines.append(f'[Returned {nlines} Row(s) and {self.ncols} Column(s)]')
+        lines = self.truncate_height(lines)
         if cols_truncated is not None:
             lines.append(cols_truncated)
         return lines
@@ -62,6 +63,6 @@ class Table:
 if __name__ == '__main__':
     con = sqlite3.connect('test.db')
     con.row_factory = sqlite3.Row
-    table = Table(con.execute("SELECT * FROM info WHERE class='Sports Classics' ORDER BY lap_time ASC"))
+    table = Table(con.execute("SELECT * FROM info ORDER BY lap_time ASC"))
     for line in table.printable():
         print(line)
