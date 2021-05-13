@@ -1,8 +1,8 @@
 import os
 import sqlite3
 
+from formatting import to_string
 from sqlite_helpers import modifies_db
-from string_manip import to_string
 from table import Table
 
 

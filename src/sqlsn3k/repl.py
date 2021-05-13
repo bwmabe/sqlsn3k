@@ -2,7 +2,7 @@ import readline
 import os
 
 from connection import SQLConnection
-from string_manip import to_string
+from formatting import to_string
 
 
 class REPL:
