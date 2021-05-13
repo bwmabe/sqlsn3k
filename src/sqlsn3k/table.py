@@ -1,7 +1,7 @@
 import shutil
 import sqlite3
 
-from formatting import fit_row, fit_table, longest_in_col, best_fit, snap_to_widest
+from sqlsn3k.formatting import fit_row, fit_table, longest_in_col, best_fit, snap_to_widest
 
 
 class Table:

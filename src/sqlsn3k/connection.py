@@ -1,9 +1,9 @@
 import os
 import sqlite3
 
-from formatting import to_string
-from sqlite_helpers import modifies_db
-from table import Table
+import sqlsn3k.formatting      # import to_string
+import sqlsn3k.sqlite_helpers  # import modifies_db
+import sqlsn3k.table           # import Table
 
 
 class SQLConnection:
@@ -51,14 +51,14 @@ class SQLConnection:
         Executes the SQLite query and returns the result; iff it fails, returns
         a str with the exception
         """
-        query = to_string(query, list_delimiter=' ')
+        query = sqlsn3k.formatting.to_string(query, list_delimiter=' ')
         cursor = self.connection.cursor()
         try:
-            result = Table(cursor.execute(query))
-            if modifies_db(query):
+            result = sqlsn3k.table.Table(cursor.execute(query))
+            if sqlsn3k.sqlite_helpers.modifies_db(query):
                 self.modified = True
             try:
-                return to_string(result)
+                return sqlsn3k.formatting.to_string(result)
             except Exception as e:
                 return f'connection:exectue:execution: {e}'
         except ValueError as ve:

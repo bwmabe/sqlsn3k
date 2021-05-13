@@ -1,8 +1,8 @@
 import readline
 import os
 
-from connection import SQLConnection
-from formatting import to_string
+from sqlsn3k.connection import SQLConnection
+from sqlsn3k.formatting import to_string
 
 
 class REPL:

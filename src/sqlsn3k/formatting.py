@@ -1,6 +1,6 @@
 import sqlite3
 
-from table import Table
+import sqlsn3k.table
 
 
 def process_row(row, first=False):
@@ -30,7 +30,7 @@ def pretty_print(rct):
         content.append(process_row(table[0], first=True))
         content += list(map(process_row, table[1:]))
         return '\n'.join(content)
-    elif T is Table:
+    elif T is sqlsn3k.table.Table:
         return '\n'.join(rct.printable())
 
 

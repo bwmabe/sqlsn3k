@@ -1,6 +1,6 @@
 import sys
 
-from repl import REPL
+from sqlsn3k.repl import REPL
 
 
 def parse_args(args):
