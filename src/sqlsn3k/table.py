@@ -17,6 +17,7 @@ class Table:
         self.height = shutil.get_terminal_size().lines
         self.longests = longest_in_col(temp_table, self.ncols, self.header)
         self.table = snap_to_widest(temp_table, self.longests)
+        self.nrows = len(self.table)
         self.header = self.table[0]
         self.interval = best_fit(self.header, self.width, fit_row, self.ncols)
 
@@ -42,7 +43,8 @@ class Table:
         Returns a list of strings that constitute a printable, human-readable,
         version of the table
         """
-        cols_truncated = None
+        cols_truncated = False
+        rows_truncated = False
         lines = list()
         header = fit_row(self.header, self.width, self.interval, self.ncols)
         if ' ... ' in header:
@@ -52,17 +54,30 @@ class Table:
         lines.append(self.header_separator())
         for row in self.table[1:]:
             lines.append(fit_row(row, self.width, self.interval, self.ncols))
-        nlines = len(lines) - 2  # Remove header and separator from count
-        lines.append(f'[Returned {nlines} Row(s) and {self.ncols} Column(s)]')
+        rowc = len(lines) - 2  # Don't count header, separator
+        lines.append(f'[Returned {rowc} Row(s) and {self.ncols} Column(s)]')
         lines = self.truncate_height(lines)
-        if cols_truncated is not None:
+        rowc = len(lines) - 2  # Update rowcount after height truncation
+        if cols_truncated:
             lines.append(cols_truncated)
+        if rowc < self.nrows:
+            lines.append(f'[{self.nrows - rowc} Row(s) truncated]')
         return lines
 
 
 if __name__ == '__main__':
     con = sqlite3.connect('test.db')
     con.row_factory = sqlite3.Row
-    table = Table(con.execute("SELECT * FROM info ORDER BY lap_time ASC"))
-    for line in table.printable():
-        print(line)
+    dims = shutil.get_terminal_size()
+
+    def test_query(dims, connection, query):
+        print(f'Test query: "{query}"')
+        print(f'Dimensions: x:{dims.columns}, y:{dims.lines}')
+        print('-' * dims.columns)
+        table = Table(connection.execute(query))
+        for line in table.printable():
+            print(line)
+        print('-' * dims.columns)
+
+    test_query(dims, con, "SELECT * FROM info ORDER BY lap_time ASC")
+    test_query(dims, con, "SELECT * FROM info WHERE class='Military'")

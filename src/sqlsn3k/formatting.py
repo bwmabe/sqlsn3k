@@ -42,11 +42,13 @@ def fit_table(table, height, interval, nfields=None):
     elements and information lines can fit on the screen
     """
     if height <= 15:
-        return None
+        return table
     new_table = [table[i] for i in interval]
+    old_height = len(table)
     width = len(table[0])
-    continuation = '...'
-    new_table = insert_at_midpoint(f'{continuation:^{width}}', new_table)
+    if old_height >= height:
+        continuation = '...'
+        new_table = insert_at_midpoint(f'{continuation:^{width}}', new_table)
     return new_table
 
 
