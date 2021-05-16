@@ -1,7 +1,7 @@
 import shutil
 import sqlite3
 
-from sqlsn3k.formatting import fit_row, fit_table, longest_in_col, best_fit, snap_to_widest
+import formatting
 
 
 class Table:
@@ -15,11 +15,11 @@ class Table:
         temp_table += rows
         self.width = shutil.get_terminal_size().columns
         self.height = shutil.get_terminal_size().lines
-        self.longests = longest_in_col(temp_table, self.ncols, self.header)
-        self.table = snap_to_widest(temp_table, self.longests)
+        self.longests = formatting.longest_in_col(temp_table, self.ncols, self.header)
+        self.table = formatting.snap_to_widest(temp_table, self.longests)
         self.nrows = len(self.table)
         self.header = self.table[0]
-        self.interval = best_fit(self.header, self.width, fit_row, self.ncols)
+        self.interval = formatting.best_fit(self.header, self.width, formatting.fit_row, self.ncols)
 
     def header_separator(self):
         """
@@ -29,14 +29,14 @@ class Table:
         separator = list()
         for i in self.longests:
             separator.append('-' * i)
-        separator = fit_row(separator, self.width, self.interval, self.ncols)
+        separator = formatting.fit_row(separator, self.width, self.interval, self.ncols)
         return separator
 
     def truncate_height(self, lines):
         """
         Takes a List of Str and returns a truncated list that fits the display.
         """
-        return fit_table(lines, self.height, best_fit(lines, self.height - 5, fit_table))
+        return formatting.fit_table(lines, self.height, formatting.best_fit(lines, self.height - 5, formatting.fit_table))
 
     def printable(self):
         """
@@ -46,14 +46,14 @@ class Table:
         cols_truncated = False
         rows_truncated = False
         lines = list()
-        header = fit_row(self.header, self.width, self.interval, self.ncols)
+        header = formatting.fit_row(self.header, self.width, self.interval, self.ncols)
         if ' ... ' in header:
             cols_truncated = self.ncols - len(self.interval)
             cols_truncated = f'[{cols_truncated} column(s) truncated]'
         lines.append(header)
         lines.append(self.header_separator())
         for row in self.table[1:]:
-            lines.append(fit_row(row, self.width, self.interval, self.ncols))
+            lines.append(formatting.fit_row(row, self.width, self.interval, self.ncols))
         rowc = len(lines) - 2  # Don't count header, separator
         lines.append(f'[Returned {rowc} Row(s) and {self.ncols} Column(s)]')
         lines = self.truncate_height(lines)

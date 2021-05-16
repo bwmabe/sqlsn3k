@@ -1,6 +1,6 @@
 import sqlite3
 
-import sqlsn3k.table
+import table
 
 
 def process_row(row, first=False):
@@ -25,12 +25,12 @@ def pretty_print(rct):
     if T is sqlite3.Row:
         return process_row(rct, first=True)
     elif T is sqlite3.Cursor:
-        table = rct.fetchall()
+        tbl = rct.fetchall()
         content = list()
-        content.append(process_row(table[0], first=True))
-        content += list(map(process_row, table[1:]))
+        content.append(process_row(tbl[0], first=True))
+        content += list(map(process_row, tbl[1:]))
         return '\n'.join(content)
-    elif T is sqlsn3k.table.Table:
+    elif T is table.Table:
         return '\n'.join(rct.printable())
 
 
@@ -43,15 +43,21 @@ def to_string(not_string, list_delimiter=', '):
     if not_string is None:
         return ''
     elif T is list or T is tuple or T is set:
-        printable_list = list()
-        for item in not_string:
-            if item is None:
-                printable_list.append('')
-            else:
-                printable_list.append(str(item))
-        return list_delimiter.join(printable_list)
-    elif T is sqlite3.Row or T is sqlite3.Cursor or T is Table:
-        return pretty_print(not_string)
+        try:
+            printable_list = list()
+            for item in not_string:
+                if item is None:
+                    printable_list.append('')
+                else:
+                    printable_list.append(str(item))
+            return list_delimiter.join(printable_list)
+        except Exception as ex:
+            print(f'formatting:to_string:list: {ex}')
+    elif T is sqlite3.Row or T is sqlite3.Cursor or T is table.Table:
+        try:
+            return pretty_print(not_string)
+        except Exception as ex:
+            print(f'formatting:to_string:rct: {ex}')
     else:
         return str(not_string)
 

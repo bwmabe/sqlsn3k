@@ -1,1 +1,1 @@
-from sqlsn3k import *
+from . import *

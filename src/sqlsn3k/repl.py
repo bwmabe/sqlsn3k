@@ -1,9 +1,8 @@
 import readline
 import os
 
-from sqlsn3k.connection import SQLConnection
-from sqlsn3k.formatting import to_string
-
+from connection import SQLConnection
+from formatting import to_string
 
 class REPL:
     histfile = os.path.join(os.path.expanduser("~"), ".sqlsn3k_history")
@@ -74,7 +73,11 @@ class REPL:
                 self.close()
                 return None
             else:
-                return self.connection.execute(cmd)
+                try:
+                    return self.connection.execute(cmd)
+                except Exception as ex:
+                    print(f'repl:eval: {ex}')
+
 
     def print(self, obj):
         """

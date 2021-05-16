@@ -3,7 +3,7 @@ import sqlite3
 
 from unittest import TestCase
 
-import sqlsn3k.table
+import table
 
 
 class TestTable(TestCase):
@@ -19,7 +19,7 @@ class TestTable(TestCase):
                       ("SELECT * FROM info WHERE class='Military'", 26, 15)]
         self.tables = list()
         for case in self.cases:
-            self.tables.append(sqlsn3k.table.Table(con.execute(case[0])))
+            self.tables.append(table.Table(con.execute(case[0])))
 
 
 class TestInit(TestTable):

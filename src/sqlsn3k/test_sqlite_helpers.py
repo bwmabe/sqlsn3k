@@ -3,7 +3,7 @@ import sqlite3
 
 from unittest import TestCase
 
-import sqlsn3k.sqlite_helpers
+import sqlite_helpers
 
 
 class TestModifiesDB(TestCase):
@@ -16,7 +16,7 @@ class TestModifiesDB(TestCase):
                         ("DROP TABLE t", True),
                         ("CREATE TABLE t", True),
                         ("INSERT INTO", True)]
-        self.modifies_db = sqlsn3k.sqlite_helpers.modifies_db
+        self.modifies_db = sqlite_helpers.modifies_db
 
     def test_modified(self):
         for query in self.queries:
